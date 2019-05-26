@@ -8,7 +8,9 @@ KiwiSDRWorker::KiwiSDRWorker(SampleSinkFifo* sampleFifo)
 	m_timer(this),
 	m_sampleFifo(sampleFifo),
 	m_samplesBuf(),
-	m_centerFrequency(1450000)
+	m_centerFrequency(1450000),
+	m_gain(20),
+	m_useAGC(true)
 {
 	connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
 
@@ -40,6 +42,19 @@ void KiwiSDRWorker::sendCenterFrequency()
 	m_webSocket.sendTextMessage(msg);
 }
 
+void KiwiSDRWorker::sendGain()
+{
+	if (!m_webSocket.isValid())
+		return;
+	qInfo("KiwiSDRWorker::sendGain");
+
+	QString msg("SET agc=");
+	msg.append(m_useAGC ? "1" : "0");
+	msg.append(" hang=0 thresh=-130 slope=6 decay=1000 manGain=");
+	msg.append(QString::number(m_gain));
+	m_webSocket.sendTextMessage(msg);
+}
+
 void KiwiSDRWorker::onBinaryMessageReceived(const QByteArray &message)
 {
 	if (message[0] == 'M' && message[1] == 'S' && message[2] == 'G')
@@ -50,7 +65,7 @@ void KiwiSDRWorker::onBinaryMessageReceived(const QByteArray &message)
 		{
 			m_webSocket.sendTextMessage("SET AR OK in=12000 out=48000");
 			m_webSocket.sendTextMessage("SERVER DE CLIENT KiwiAngel SND");
-			m_webSocket.sendTextMessage("SET agc=0 hang=0 thresh=0 slope=0 decay=0 manGain=20");
+			sendGain();
 			sendCenterFrequency();
 			m_timer.start(5000);
 		}
@@ -84,6 +99,17 @@ void KiwiSDRWorker::onCenterFrequencyChanged(quint64 centerFrequency)
 
 	m_centerFrequency = centerFrequency;
 	sendCenterFrequency();
+}
+
+void KiwiSDRWorker::onGainChanged(quint32 gain, bool useAGC)
+{
+	if (m_gain == gain && m_useAGC == useAGC)
+		return;
+
+	m_gain = gain;
+	m_useAGC = useAGC;
+
+	sendGain();
 }
 
 void KiwiSDRWorker::onServerAddressChanged(QString serverAddress)

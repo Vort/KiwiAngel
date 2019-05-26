@@ -144,12 +144,29 @@ void KiwiSDRGui::on_record_toggled(bool checked)
     m_sampleSource->getInputMessageQueue()->push(message);
 }
 
+void KiwiSDRGui::on_agc_toggled(bool checked)
+{
+	m_settings.m_useAGC = checked;
+	sendSettings();
+}
+
+void KiwiSDRGui::on_gain_valueChanged(int value)
+{
+	m_settings.m_gain = value;
+	ui->gainText->setText(QString::number(m_settings.m_gain) + " dB");
+	sendSettings();
+}
+
 void KiwiSDRGui::displaySettings()
 {
     blockApplySettings(true);
 
     ui->centerFrequency->setValue(m_settings.m_centerFrequency / 1000);
 	ui->serverAddress->setText(m_settings.m_serverAddress);
+	ui->gain->setValue(m_settings.m_gain);
+	ui->gainText->setText(QString::number(m_settings.m_gain) + " dB");
+	ui->agc->setChecked(m_settings.m_useAGC);
+
     blockApplySettings(false);
 }
 

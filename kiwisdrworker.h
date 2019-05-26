@@ -24,11 +24,16 @@ private:
 	QString m_serverAddress;
 	uint64_t m_centerFrequency;
 
+	uint32_t m_gain;
+	bool m_useAGC;
+
 	void sendCenterFrequency();
+	void sendGain();
 
 public slots:
 	void onCenterFrequencyChanged(quint64 centerFrequency);
 	void onServerAddressChanged(QString serverAddress);
+	void onGainChanged(quint32 gain, bool useAGC);
 
 private slots:
 	void onConnected();

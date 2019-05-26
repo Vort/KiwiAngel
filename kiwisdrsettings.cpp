@@ -13,6 +13,9 @@ void KiwiSDRSettings::resetToDefaults()
 {
     m_centerFrequency = 1450000;
 
+	m_gain = 20;
+	m_useAGC = true;
+
     m_fileRecordName = "";
 	m_serverAddress = "127.0.0.1:8073";
 
@@ -26,11 +29,17 @@ QByteArray KiwiSDRSettings::serialize() const
 {
     SimpleSerializer s(1);
 
+	s.writeU32(4, m_gain);
+	s.writeBool(5, m_useAGC);
+
+
     s.writeBool(18, m_useReverseAPI);
     s.writeString(19, m_reverseAPIAddress);
     s.writeU32(20, m_reverseAPIPort);
     s.writeU32(21, m_reverseAPIDeviceIndex);
+
 	s.writeString(22, m_serverAddress);
+
 	return s.final();
 }
 
@@ -47,6 +56,9 @@ bool KiwiSDRSettings::deserialize(const QByteArray& data)
     if (d.getVersion() == 1)
     {
         uint32_t utmp;
+
+		d.readU32(4, &m_gain, 20);
+		d.readBool(5, &m_useAGC, true);
 
         d.readBool(18, &m_useReverseAPI, false);
         d.readString(19, &m_reverseAPIAddress, "127.0.0.1");

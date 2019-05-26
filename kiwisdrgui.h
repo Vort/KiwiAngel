@@ -63,6 +63,8 @@ private slots:
 	void on_startStop_toggled(bool checked);
     void on_centerFrequency_changed(quint64 value);
 	void on_record_toggled(bool checked);
+	void on_gain_valueChanged(int value);
+	void on_agc_toggled(bool checked);
 	void on_serverAddressApplyButton_clicked();
 	void openDeviceSettingsDialog(const QPoint& p);
     void updateStatus();

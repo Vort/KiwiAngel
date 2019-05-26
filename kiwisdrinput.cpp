@@ -81,6 +81,7 @@ bool KiwiSDRInput::start()
 
 	connect(this, &KiwiSDRInput::setWorkerCenterFrequency, m_kiwiSDRWorker, &KiwiSDRWorker::onCenterFrequencyChanged);
 	connect(this, &KiwiSDRInput::setWorkerServerAddress, m_kiwiSDRWorker, &KiwiSDRWorker::onServerAddressChanged);
+	connect(this, &KiwiSDRInput::setWorkerGain, m_kiwiSDRWorker, &KiwiSDRWorker::onGainChanged);
 
 	mutexLocker.unlock();
 
@@ -233,6 +234,12 @@ bool KiwiSDRInput::applySettings(const KiwiSDRSettings& settings, bool force)
 
 	if (m_settings.m_serverAddress != settings.m_serverAddress || force)
 		emit setWorkerServerAddress(settings.m_serverAddress);
+
+	if (m_settings.m_gain != settings.m_gain ||
+		m_settings.m_useAGC != settings.m_useAGC || force)
+	{
+		emit setWorkerGain(settings.m_gain, settings.m_useAGC);
+	}
 
     if (m_settings.m_centerFrequency != settings.m_centerFrequency || force)
     {
