@@ -76,16 +76,13 @@ void KiwiSDRWorker::onBinaryMessageReceived(const QByteArray &message)
 		int sampleCount = 512;
 		const int16_t* messageSamples = (const int16_t*)(message.constData() + dataOffset);
 
-		Sample s;
 		m_samplesBuf.clear();
 		for (int i = 0; i < sampleCount; i++)
 		{
-			s.setReal(boost::endian::endian_reverse(messageSamples[i * 2]));
-			s.setImag(boost::endian::endian_reverse(messageSamples[i * 2 + 1]));
-			m_samplesBuf.push_back(s);
-			m_samplesBuf.push_back(s);
-			m_samplesBuf.push_back(s);
-			m_samplesBuf.push_back(s);
+			m_samplesBuf.push_back(Sample(
+				boost::endian::endian_reverse(messageSamples[i * 2]),
+				boost::endian::endian_reverse(messageSamples[i * 2 + 1])
+			));
 		}
 
 		m_sampleFifo->write(m_samplesBuf.begin(), m_samplesBuf.end());
@@ -123,8 +120,8 @@ void KiwiSDRWorker::onServerAddressChanged(QString serverAddress)
 	QString url("ws://");
 	url.append(m_serverAddress);
 	url.append("/kiwi/");
-	url.append(QString::number(QDateTime::currentDateTime().toTime_t()));
-	url.append("000/SND");
+	url.append(QString::number(QDateTime::currentMSecsSinceEpoch()));
+	url.append("/SND");
 	m_webSocket.open(QUrl(url));
 }
 

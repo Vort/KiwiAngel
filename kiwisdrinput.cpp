@@ -138,7 +138,7 @@ const QString& KiwiSDRInput::getDeviceDescription() const
 
 int KiwiSDRInput::getSampleRate() const
 {
-	return 48000;
+	return 12000;
 }
 
 quint64 KiwiSDRInput::getCenterFrequency() const
