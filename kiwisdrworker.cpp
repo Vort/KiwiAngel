@@ -15,20 +15,22 @@ KiwiSDRWorker::KiwiSDRWorker(SampleSinkFifo* sampleFifo)
 	connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
 
 	m_webSocket.setParent(this);
-	connect(&m_webSocket, &QWebSocket::connected, this, &KiwiSDRWorker::onConnected);
-	connect(&m_webSocket, &QWebSocket::disconnected, this, &KiwiSDRWorker::onDisconnected);
-	connect(&m_webSocket, &QWebSocket::binaryMessageReceived, this, &KiwiSDRWorker::onBinaryMessageReceived);
+	connect(&m_webSocket, &QWebSocket::connected,
+		this, &KiwiSDRWorker::onConnected);
+	connect(&m_webSocket, &QWebSocket::binaryMessageReceived,
+		this, &KiwiSDRWorker::onBinaryMessageReceived);
+	connect(&m_webSocket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error),
+		this, &KiwiSDRWorker::onSocketError);
 }
 
 void KiwiSDRWorker::onConnected()
 {
-	qInfo("KiwiSDRWorker::onConnected");
 	m_webSocket.sendTextMessage("SET auth t=kiwi p=#");
 }
 
-void KiwiSDRWorker::onDisconnected()
+void KiwiSDRWorker::onSocketError(QAbstractSocket::SocketError error)
 {
-	qInfo("KiwiSDRWorker::onDisconnected");
+	emit updateStatus(3);
 }
 
 void KiwiSDRWorker::sendCenterFrequency()
@@ -36,7 +38,6 @@ void KiwiSDRWorker::sendCenterFrequency()
 	if (!m_webSocket.isValid())
 		return;
 
-	qInfo("KiwiSDRWorker::sendCenterFrequency");
 	QString freq = QString::number(m_centerFrequency / 1000.0, 'f', 3);
 	QString msg = "SET mod=iq low_cut=-5980 high_cut=5980 freq=" + freq;
 	m_webSocket.sendTextMessage(msg);
@@ -46,7 +47,6 @@ void KiwiSDRWorker::sendGain()
 {
 	if (!m_webSocket.isValid())
 		return;
-	qInfo("KiwiSDRWorker::sendGain");
 
 	QString msg("SET agc=");
 	msg.append(m_useAGC ? "1" : "0");
@@ -68,6 +68,7 @@ void KiwiSDRWorker::onBinaryMessageReceived(const QByteArray &message)
 			sendGain();
 			sendCenterFrequency();
 			m_timer.start(5000);
+			emit updateStatus(2);
 		}
 	}
 	else if (message[0] == 'S' && message[1] == 'N' && message[2] == 'D')
@@ -113,9 +114,9 @@ void KiwiSDRWorker::onServerAddressChanged(QString serverAddress)
 {
 	if (m_serverAddress == serverAddress)
 		return;
-
-	qInfo("KiwiSDRWorker::onServerAddressChanged");
 	m_serverAddress = serverAddress;
+
+	emit updateStatus(1);
 
 	QString url("ws://");
 	url.append(m_serverAddress);
@@ -127,6 +128,5 @@ void KiwiSDRWorker::onServerAddressChanged(QString serverAddress)
 
 void KiwiSDRWorker::tick()
 {
-	qInfo("Keepalive");
 	m_webSocket.sendTextMessage("SET keepalive");
 }

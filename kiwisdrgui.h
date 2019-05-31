@@ -52,6 +52,8 @@ private:
     quint64 m_deviceCenterFrequency; //!< Center frequency in device
 	int m_lastEngineState;
 	MessageQueue m_inputMessageQueue;
+	std::vector<QString> m_statusColors;
+	std::vector<QString> m_statusTooltips;
 
 	void blockApplySettings(bool block) { m_doApplySettings = !block; }
 	void displaySettings();
@@ -65,6 +67,7 @@ private slots:
 	void on_record_toggled(bool checked);
 	void on_gain_valueChanged(int value);
 	void on_agc_toggled(bool checked);
+	void on_serverAddress_returnPressed();
 	void on_serverAddressApplyButton_clicked();
 	void openDeviceSettingsDialog(const QPoint& p);
     void updateStatus();

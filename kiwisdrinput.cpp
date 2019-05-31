@@ -21,22 +21,24 @@
 MESSAGE_CLASS_DEFINITION(KiwiSDRInput::MsgConfigureKiwiSDR, Message)
 MESSAGE_CLASS_DEFINITION(KiwiSDRInput::MsgFileRecord, Message)
 MESSAGE_CLASS_DEFINITION(KiwiSDRInput::MsgStartStop, Message)
+MESSAGE_CLASS_DEFINITION(KiwiSDRInput::MsgSetStatus, Message)
 
 
 KiwiSDRInput::KiwiSDRInput(DeviceAPI *deviceAPI) :
     m_deviceAPI(deviceAPI),
 	m_settings(),
-	m_kiwiSDRWorker(0),
+	m_kiwiSDRWorker(nullptr),
 	m_deviceDescription(),
 	m_running(false),
 	m_masterTimer(deviceAPI->getMasterTimer())
 {
 	m_kiwiSDRWorkerThread.start();
-    m_fileSink = new FileRecord(QString("kiwisdr_%1.sdriq").arg(m_deviceAPI->getDeviceUID()));
+
+    m_fileSink = new FileRecord();
     m_deviceAPI->setNbSourceStreams(1);
     m_deviceAPI->addAncillarySink(m_fileSink);
 
-    if (!m_sampleFifo.setSize(48000 * 4)) {
+    if (!m_sampleFifo.setSize(getSampleRate() * 2)) {
         qCritical("KiwiSDRInput::KiwiSDRInput: Could not allocate SampleFifo");
     }
 
@@ -82,6 +84,7 @@ bool KiwiSDRInput::start()
 	connect(this, &KiwiSDRInput::setWorkerCenterFrequency, m_kiwiSDRWorker, &KiwiSDRWorker::onCenterFrequencyChanged);
 	connect(this, &KiwiSDRInput::setWorkerServerAddress, m_kiwiSDRWorker, &KiwiSDRWorker::onServerAddressChanged);
 	connect(this, &KiwiSDRInput::setWorkerGain, m_kiwiSDRWorker, &KiwiSDRWorker::onGainChanged);
+	connect(m_kiwiSDRWorker, &KiwiSDRWorker::updateStatus, this, &KiwiSDRInput::setWorkerStatus);
 
 	mutexLocker.unlock();
 
@@ -94,6 +97,8 @@ bool KiwiSDRInput::start()
 void KiwiSDRInput::stop()
 {
 	QMutexLocker mutexLocker(&m_mutex);
+
+	setWorkerStatus(0);
 
 	if (m_kiwiSDRWorker != 0)
 	{
@@ -161,6 +166,12 @@ void KiwiSDRInput::setCenterFrequency(qint64 centerFrequency)
     }
 }
 
+void KiwiSDRInput::setWorkerStatus(int status)
+{
+	if (m_guiMessageQueue)
+		m_guiMessageQueue->push(MsgSetStatus::create(status));
+}
+
 bool KiwiSDRInput::handleMessage(const Message& message)
 {
     if (MsgConfigureKiwiSDR::match(message))
@@ -184,12 +195,7 @@ bool KiwiSDRInput::handleMessage(const Message& message)
 
         if (conf.getStartStop())
         {
-            if (m_settings.m_fileRecordName.size() != 0) {
-                m_fileSink->setFileName(m_settings.m_fileRecordName);
-            } else {
-                m_fileSink->genUniqueFileName(m_deviceAPI->getDeviceUID());
-            }
-
+            m_fileSink->genUniqueFileName(m_deviceAPI->getDeviceUID());
             m_fileSink->startRecording();
         }
         else

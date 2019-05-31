@@ -30,6 +30,9 @@ private:
 	void sendCenterFrequency();
 	void sendGain();
 
+signals:
+	void updateStatus(int status);
+
 public slots:
 	void onCenterFrequencyChanged(quint64 centerFrequency);
 	void onServerAddressChanged(QString serverAddress);
@@ -37,8 +40,8 @@ public slots:
 
 private slots:
 	void onConnected();
-	void onDisconnected();
 	void onBinaryMessageReceived(const QByteArray &message);
+	void onSocketError(QAbstractSocket::SocketError error);
 
     void tick();
 };

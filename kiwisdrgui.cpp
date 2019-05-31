@@ -37,6 +37,16 @@ KiwiSDRGui::KiwiSDRGui(DeviceUISet *deviceUISet, QWidget* parent) :
     qDebug("KiwiSDRGui::KiwiSDRGui");
     m_sampleSource = m_deviceUISet->m_deviceAPI->getSampleSource();
 
+	m_statusTooltips.push_back("Idle");
+	m_statusTooltips.push_back("Connecting...");
+	m_statusTooltips.push_back("Connected");
+	m_statusTooltips.push_back("Error");
+
+	m_statusColors.push_back("gray");
+	m_statusColors.push_back("rgb(232, 212, 35)");
+	m_statusColors.push_back("rgb(35, 138, 35)");
+	m_statusColors.push_back("rgb(232, 85, 85)");
+
     ui->setupUi(this);
     ui->centerFrequency->setColorMapper(ColorMapper(ColorMapper::GrayGold));
     ui->centerFrequency->setValueRange(7, 0, 9999999);
@@ -126,6 +136,11 @@ void KiwiSDRGui::on_centerFrequency_changed(quint64 value)
     sendSettings();
 }
 
+void KiwiSDRGui::on_serverAddress_returnPressed()
+{
+	on_serverAddressApplyButton_clicked();
+}
+
 void KiwiSDRGui::on_serverAddressApplyButton_clicked()
 {
 	m_settings.m_serverAddress = ui->serverAddress->text();
@@ -194,7 +209,7 @@ void KiwiSDRGui::updateStatus()
 
     if (m_lastEngineState != state)
     {
-        switch(state)
+        switch (state)
         {
             case DeviceAPI::StNotStarted:
                 ui->startStop->setStyleSheet("QToolButton { background:rgb(79,79,79); }");
@@ -237,6 +252,16 @@ bool KiwiSDRGui::handleMessage(const Message& message)
 
         return true;
     }
+	else if (KiwiSDRInput::MsgSetStatus::match(message))
+	{
+		qDebug("KiwiSDRGui::handleMessage: MsgSetStatus");
+		KiwiSDRInput::MsgSetStatus& notif = (KiwiSDRInput::MsgSetStatus&) message;
+		int status = notif.getStatus();
+		ui->statusIndicator->setToolTip(m_statusTooltips[status]);
+		ui->statusIndicator->setStyleSheet("QLabel { background-color: " +
+			m_statusColors[status] + "; border-radius: 7px; }");
+		return true;
+	}
     else
     {
         return false;

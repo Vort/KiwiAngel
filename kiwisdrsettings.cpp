@@ -1,6 +1,5 @@
 // License: GPLv3
 
-#include <QtGlobal>
 #include "util/simpleserializer.h"
 #include "kiwisdrsettings.h"
 
@@ -16,7 +15,6 @@ void KiwiSDRSettings::resetToDefaults()
 	m_gain = 20;
 	m_useAGC = true;
 
-    m_fileRecordName = "";
 	m_serverAddress = "127.0.0.1:8073";
 
     m_useReverseAPI = false;

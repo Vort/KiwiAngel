@@ -82,6 +82,25 @@ public:
         { }
     };
 
+	class MsgSetStatus : public Message {
+		MESSAGE_CLASS_DECLARATION
+
+	public:
+		int getStatus() const { return m_status; }
+
+		static MsgSetStatus* create(int status) {
+			return new MsgSetStatus(status);
+		}
+
+	protected:
+		int m_status;
+
+		MsgSetStatus(int status) :
+			Message(),
+			m_status(status)
+		{ }
+	};
+
 	KiwiSDRInput(DeviceAPI *deviceAPI);
 	virtual ~KiwiSDRInput();
 	virtual void destroy();
@@ -147,6 +166,7 @@ signals:
 	void setWorkerGain(quint32 gain, bool useAGC);
 
 private slots:
+	void setWorkerStatus(int status);
     void networkManagerFinished(QNetworkReply *reply);
 };
 

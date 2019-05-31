@@ -4,14 +4,15 @@
 #define _KIWISDR_KIWISDRSETTINGS_H_
 
 #include <QString>
+#include <QByteArray>
 
 struct KiwiSDRSettings {
 	uint32_t m_gain;
 	bool m_useAGC;
 
     quint64 m_centerFrequency;
-    QString m_fileRecordName;
 	QString m_serverAddress;
+
 	bool m_useReverseAPI;
     QString m_reverseAPIAddress;
     uint16_t m_reverseAPIPort;

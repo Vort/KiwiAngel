@@ -208,6 +208,31 @@
       </widget>
      </item>
      <item>
+      <widget class="QLabel" name="statusIndicator">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>14</width>
+         <height>14</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Idle</string>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QLabel { background-color: gray; border-radius: 7px; }</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="serverAddressApplyButton">
        <property name="maximumSize">
         <size>
