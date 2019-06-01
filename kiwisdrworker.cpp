@@ -81,8 +81,8 @@ void KiwiSDRWorker::onBinaryMessageReceived(const QByteArray &message)
 		for (int i = 0; i < sampleCount; i++)
 		{
 			m_samplesBuf.push_back(Sample(
-				boost::endian::endian_reverse(messageSamples[i * 2]),
-				boost::endian::endian_reverse(messageSamples[i * 2 + 1])
+				boost::endian::endian_reverse(messageSamples[i * 2]) << (SDR_RX_SAMP_SZ - 16),
+				boost::endian::endian_reverse(messageSamples[i * 2 + 1]) << (SDR_RX_SAMP_SZ - 16)
 			));
 		}
 

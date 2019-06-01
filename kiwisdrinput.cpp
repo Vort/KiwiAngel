@@ -8,9 +8,6 @@
 #include <QNetworkAccessManager>
 #include <QBuffer>
 
-#include "SWGDeviceSettings.h"
-#include "SWGDeviceState.h"
-
 #include "kiwisdrinput.h"
 #include "device/deviceapi.h"
 #include "kiwisdrworker.h"
@@ -277,9 +274,7 @@ int KiwiSDRInput::webapiRunGet(
         SWGSDRangel::SWGDeviceState& response,
         QString& errorMessage)
 {
-    (void) errorMessage;
-    m_deviceAPI->getDeviceEngineStateStr(*response.getState());
-    return 200;
+    return 404;
 }
 
 int KiwiSDRInput::webapiRun(
@@ -287,18 +282,7 @@ int KiwiSDRInput::webapiRun(
         SWGSDRangel::SWGDeviceState& response,
         QString& errorMessage)
 {
-    (void) errorMessage;
-    m_deviceAPI->getDeviceEngineStateStr(*response.getState());
-    MsgStartStop *message = MsgStartStop::create(run);
-    m_inputMessageQueue.push(message);
-
-    if (m_guiMessageQueue) // forward to GUI if any
-    {
-        MsgStartStop *msgToGUI = MsgStartStop::create(run);
-        m_guiMessageQueue->push(msgToGUI);
-    }
-
-    return 200;
+	return 404;
 }
 
 int KiwiSDRInput::webapiSettingsGet(
@@ -327,28 +311,6 @@ void KiwiSDRInput::webapiReverseSendSettings(QList<QString>& deviceSettingsKeys,
 
 void KiwiSDRInput::webapiReverseSendStartStop(bool start)
 {
-    SWGSDRangel::SWGDeviceSettings *swgDeviceSettings = new SWGSDRangel::SWGDeviceSettings();
-    swgDeviceSettings->setDirection(0); // single Rx
-    swgDeviceSettings->setOriginatorIndex(m_deviceAPI->getDeviceSetIndex());
-    swgDeviceSettings->setDeviceHwType(new QString("KiwiSDR"));
-
-    QString channelSettingsURL = QString("http://%1:%2/sdrangel/deviceset/%3/device/run")
-            .arg(m_settings.m_reverseAPIAddress)
-            .arg(m_settings.m_reverseAPIPort)
-            .arg(m_settings.m_reverseAPIDeviceIndex);
-    m_networkRequest.setUrl(QUrl(channelSettingsURL));
-    m_networkRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-
-    QBuffer *buffer=new QBuffer();
-    buffer->open((QBuffer::ReadWrite));
-    buffer->write(swgDeviceSettings->asJson().toUtf8());
-    buffer->seek(0);
-
-    if (start) {
-        m_networkManager->sendCustomRequest(m_networkRequest, "POST", buffer);
-    } else {
-        m_networkManager->sendCustomRequest(m_networkRequest, "DELETE", buffer);
-    }
 }
 
 void KiwiSDRInput::networkManagerFinished(QNetworkReply *reply)
