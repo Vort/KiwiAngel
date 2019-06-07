@@ -25,18 +25,16 @@ void KiwiSDRSettings::resetToDefaults()
 
 QByteArray KiwiSDRSettings::serialize() const
 {
-    SimpleSerializer s(1);
+    SimpleSerializer s(2);
 
-	s.writeU32(4, m_gain);
-	s.writeBool(5, m_useAGC);
+	s.writeString(2, m_serverAddress);
+	s.writeU32(3, m_gain);
+	s.writeBool(4, m_useAGC);
 
-
-    s.writeBool(18, m_useReverseAPI);
-    s.writeString(19, m_reverseAPIAddress);
-    s.writeU32(20, m_reverseAPIPort);
-    s.writeU32(21, m_reverseAPIDeviceIndex);
-
-	s.writeString(22, m_serverAddress);
+    s.writeBool(100, m_useReverseAPI);
+    s.writeString(101, m_reverseAPIAddress);
+    s.writeU32(102, m_reverseAPIPort);
+    s.writeU32(103, m_reverseAPIDeviceIndex);
 
 	return s.final();
 }
@@ -51,27 +49,27 @@ bool KiwiSDRSettings::deserialize(const QByteArray& data)
         return false;
     }
 
-    if (d.getVersion() == 1)
+    if (d.getVersion() == 2)
     {
-        uint32_t utmp;
+		uint32_t utmp;
 
-		d.readU32(4, &m_gain, 20);
-		d.readBool(5, &m_useAGC, true);
+		d.readString(2, &m_serverAddress, "127.0.0.1:8073");
+		d.readU32(3, &m_gain, 20);
+		d.readBool(4, &m_useAGC, true);
 
-        d.readBool(18, &m_useReverseAPI, false);
-        d.readString(19, &m_reverseAPIAddress, "127.0.0.1");
-        d.readU32(20, &utmp, 0);
+		d.readBool(100, &m_useReverseAPI, false);
+		d.readString(101, &m_reverseAPIAddress, "127.0.0.1");
+		d.readU32(102, &utmp, 0);
 
-        if ((utmp > 1023) && (utmp < 65535)) {
-            m_reverseAPIPort = utmp;
-        } else {
-            m_reverseAPIPort = 8888;
-        }
+		if ((utmp > 1023) && (utmp < 65535)) {
+			m_reverseAPIPort = utmp;
+		}
+		else {
+			m_reverseAPIPort = 8888;
+		}
 
-        d.readU32(21, &utmp, 0);
-        m_reverseAPIDeviceIndex = utmp > 99 ? 99 : utmp;
-
-		d.readString(22, &m_serverAddress, "127.0.0.1:8073");
+		d.readU32(103, &utmp, 0);
+		m_reverseAPIDeviceIndex = utmp > 99 ? 99 : utmp;
 
         return true;
     }
